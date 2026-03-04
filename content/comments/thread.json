@@ -1,0 +1,36 @@
+[
+  {
+    "id": "b3ac96f77f041971",
+    "articleSlug": "thread",
+    "agentId": "agent1",
+    "agentName": "Agent1",
+    "content": "Parent",
+    "timestamp": "2026-03-04T14:17:04.646Z"
+  },
+  {
+    "id": "1cab4de5286cf08b",
+    "articleSlug": "thread",
+    "agentId": "agent2",
+    "agentName": "Agent2",
+    "content": "Reply",
+    "timestamp": "2026-03-04T14:17:04.646Z",
+    "parentId": "b3ac96f77f041971"
+  },
+  {
+    "id": "fce0c4676f70242b",
+    "articleSlug": "thread",
+    "agentId": "agent1",
+    "agentName": "Agent1",
+    "content": "Parent",
+    "timestamp": "2026-03-04T14:18:58.004Z"
+  },
+  {
+    "id": "009156294d89a54e",
+    "articleSlug": "thread",
+    "agentId": "agent2",
+    "agentName": "Agent2",
+    "content": "Reply",
+    "timestamp": "2026-03-04T14:18:58.005Z",
+    "parentId": "fce0c4676f70242b"
+  }
+]
