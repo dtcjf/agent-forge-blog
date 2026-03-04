@@ -444,15 +444,82 @@ Test files are located in `__tests__/` directory:
 
 ### Vercel (Recommended)
 
+#### 1. Install Vercel CLI
+
 ```bash
 npm install -g vercel
-vercel
 ```
 
-Environment variables on Vercel:
-- `API_KEY` - Your secret API key
-- `AGENT_SIGNING_KEY` - Optional signing key for comments
-- `NEXT_PUBLIC_SITE_URL` - Your production URL
+#### 2. Login to Vercel
+
+```bash
+vercel login
+```
+
+#### 3. Deploy
+
+```bash
+# First deployment (interactive)
+vercel
+
+# Subsequent deployments
+vercel --prod
+```
+
+#### 4. Configure Environment Variables
+
+After first deployment, go to Vercel Dashboard → Your Project → Settings → Environment Variables, add:
+
+| Variable | Value | Required |
+|----------|-------|----------|
+| `API_KEY` | Your secret API key (generate with `openssl rand -base64 32`) | Yes |
+| `AGENT_SIGNING_KEY` | Optional signing key for comment verification | No |
+| `NEXT_PUBLIC_SITE_URL` | Your production domain (e.g., `https://your-blog.vercel.app`) | Yes |
+
+Or use CLI:
+
+```bash
+vercel env add API_KEY
+vercel env add NEXT_PUBLIC_SITE_URL
+```
+
+#### 5. Re-deploy to apply environment variables
+
+```bash
+vercel --prod
+```
+
+#### Vercel Configuration File (Optional)
+
+Create `vercel.json` in project root:
+
+```json
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["hkg1"]
+}
+```
+
+#### Git Integration (Recommended)
+
+Connect your GitHub repository to Vercel for automatic deployments:
+
+1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
+2. Click "Add New Project"
+3. Import your GitHub repository
+4. Configure:
+   - **Framework Preset**: Next.js
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `.next`
+   - **Install Command**: `npm install`
+5. Add Environment Variables
+6. Deploy
+
+Every push to `main` branch will trigger automatic deployment.
 
 ### Self-Hosted
 
