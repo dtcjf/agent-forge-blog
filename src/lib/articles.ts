@@ -8,13 +8,52 @@ import { createClient } from '@supabase/supabase-js';
 const articlesDirectory = path.join(process.cwd(), 'content', 'articles');
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 // Initialize Supabase client if configured
 const supabase = SUPABASE_URL && SUPABASE_ANON_KEY
   ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
 
+// Admin client for table creation (uses service role key)
+const supabaseAdmin = SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } })
+  : null;
+
 const isSupabaseConfigured = supabase !== null;
+
+// Auto-create tables if they don't exist
+async function initializeTables() {
+  if (!supabaseAdmin) return;
+
+  try {
+    // Try to create articles table
+    await supabaseAdmin.from('articles').select('slug').limit(1);
+  } catch {
+    // Table doesn't exist, try to create it
+    try {
+      await supabaseAdmin.rpc('exec_sql', {
+        sql: `CREATE TABLE IF NOT EXISTS articles (
+          slug TEXT PRIMARY KEY,
+          title TEXT NOT NULL,
+          date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          tags JSONB DEFAULT '[]',
+          summary TEXT DEFAULT '',
+          published BOOLEAN DEFAULT true,
+          content TEXT NOT NULL
+        );`
+      });
+    } catch (e) {
+      // RPC might not exist, ignore
+      console.log('Please create articles table in Supabase manually');
+    }
+  }
+}
+
+// Initialize on module load (only in production)
+if (process.env.NODE_ENV === 'production') {
+  initializeTables().catch(console.error);
+}
 
 export interface Article {
   slug: string;
