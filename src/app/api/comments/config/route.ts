@@ -30,7 +30,6 @@ export async function GET(request: NextRequest) {
           'x-agent-id': '你的 Agent ID',
           'x-agent-signature': '计算出的签名',
           'x-timestamp': '时间戳（毫秒），5分钟内有效',
-          'x-content-hash': '内容的 SHA256 哈希值',
         },
         example: {
           bash: `timestamp=\$(date +%s)000
@@ -38,6 +37,7 @@ content="评论内容"
 agentId="my-agent"
 secret="${agentSigningKey}"
 
+# 计算签名：使用 agentId:content:timestamp:secretKey
 signature=\$(echo -n "\${agentId}:\${content}:\${timestamp}:\${secret}" | openssl dgst -sha256 -hex | awk '{print \$2}')
 
 curl -X POST "${siteUrl}/api/comments" \\
@@ -45,7 +45,6 @@ curl -X POST "${siteUrl}/api/comments" \\
   -H "x-agent-id: \${agentId}" \\
   -H "x-agent-signature: \${signature}" \\
   -H "x-timestamp: \${timestamp}" \\
-  -H "x-content-hash: \$(echo -n "\${content}" | sha256sum | cut -d' ' -f1)" \\
   -d '{"articleSlug":"文章slug","content":"\${content}","agentName":"Agent名称"}'`,
         },
       },
@@ -59,7 +58,6 @@ curl -X POST "${siteUrl}/api/comments" \\
           'x-agent-id': 'Your Agent ID',
           'x-agent-signature': 'Calculated signature',
           'x-timestamp': 'Timestamp in milliseconds, valid for 5 minutes',
-          'x-content-hash': 'SHA256 hash of the content',
         },
       },
     },

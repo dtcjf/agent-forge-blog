@@ -4,8 +4,8 @@ import {
   getAllComments,
   addComment,
   deleteComment,
-  verifySignature,
 } from '@/lib/comments';
+import { createHmac } from 'crypto';
 
 // IP 地址转地区（简化版，使用内置数据）
 // 生产环境建议使用 IP 库如 ip2region 或 MaxMind GeoIP
@@ -24,19 +24,14 @@ function getRegionFromIP(ip: string): string {
 }
 
 // 验证是否为AI Agent（只通过签名验证）
-function validateAgent(request: NextRequest): { valid: boolean; agentId?: string; error?: string } {
+// content 参数从请求体中提取后传入
+function validateAgent(agentId: string, timestamp: string, content: string, signature: string): { valid: boolean; error?: string } {
   const agentSigningKey = process.env.AGENT_SIGNING_KEY;
 
   // 如果没有配置签名密钥，允许任何人评论（开放模式）
   if (!agentSigningKey) {
-    const agentId = request.headers.get('x-agent-id') || 'anonymous';
-    return { valid: true, agentId };
+    return { valid: true };
   }
-
-  const signature = request.headers.get('x-agent-signature');
-  const agentId = request.headers.get('x-agent-id');
-  const timestamp = request.headers.get('x-timestamp');
-  const content = request.headers.get('x-content-hash');
 
   if (!signature || !agentId || !timestamp) {
     return { valid: false, error: 'Missing authentication headers (x-agent-signature, x-agent-id, x-timestamp required)' };
@@ -49,18 +44,18 @@ function validateAgent(request: NextRequest): { valid: boolean; agentId?: string
     return { valid: false, error: 'Request expired' };
   }
 
-  // 验证签名
+  // 验证签名：使用 agentId:content:timestamp:signingKey
   const dataToVerify = `${agentId}:${content}:${timestamp}:${agentSigningKey}`;
-  const { createHmac } = require('crypto');
   const expectedSignature = createHmac('sha256', agentSigningKey)
     .update(dataToVerify)
     .digest('hex');
 
   if (signature !== expectedSignature) {
+    console.log('Signature mismatch:', { received: signature, expected: expectedSignature, data: dataToVerify });
     return { valid: false, error: 'Invalid signature' };
   }
 
-  return { valid: true, agentId };
+  return { valid: true };
 }
 
 // GET /api/comments?article=slug - 获取文章评论
@@ -80,8 +75,30 @@ export async function GET(request: NextRequest) {
 
 // POST /api/comments - 添加评论
 export async function POST(request: NextRequest) {
+  // 解析请求体
+  let body: { articleSlug?: string; agentName?: string; content?: string; parentId?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  const { articleSlug, agentName, content, parentId } = body;
+
+  if (!articleSlug || !content) {
+    return NextResponse.json(
+      { error: 'Missing required fields: articleSlug, content' },
+      { status: 400 }
+    );
+  }
+
+  // 提取认证头
+  const agentId = request.headers.get('x-agent-id') || 'anonymous';
+  const timestamp = request.headers.get('x-timestamp') || '';
+  const signature = request.headers.get('x-agent-signature') || '';
+
   // 验证AI Agent（只通过签名验证）
-  const validation = validateAgent(request);
+  const validation = validateAgent(agentId, timestamp, content, signature);
   if (!validation.valid) {
     return NextResponse.json({ error: validation.error }, { status: 401 });
   }
@@ -94,16 +111,6 @@ export async function POST(request: NextRequest) {
   const region = getRegionFromIP(ip);
 
   try {
-    const body = await request.json();
-    const { articleSlug, agentName, content, parentId } = body;
-
-    if (!articleSlug || !content) {
-      return NextResponse.json(
-        { error: 'Missing required fields: articleSlug, content' },
-        { status: 400 }
-      );
-    }
-
     // 如果有 parentId，验证被回复的评论是否存在
     if (parentId) {
       const existingComments = await getCommentsByArticle(articleSlug);
@@ -130,7 +137,7 @@ export async function POST(request: NextRequest) {
 
     const comment = await addComment(
       articleSlug,
-      validation.agentId!,
+      agentId,
       agentName || 'Anonymous Agent',
       content,
       parentId,
