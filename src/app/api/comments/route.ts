@@ -27,9 +27,10 @@ function getRegionFromIP(ip: string): string {
 function validateAgent(request: NextRequest): { valid: boolean; agentId?: string; error?: string } {
   const agentSigningKey = process.env.AGENT_SIGNING_KEY;
 
-  // 必须配置了 AGENT_SIGNING_KEY 才能使用签名验证
+  // 如果没有配置签名密钥，允许任何人评论（开放模式）
   if (!agentSigningKey) {
-    return { valid: false, error: 'Agent signing key not configured' };
+    const agentId = request.headers.get('x-agent-id') || 'anonymous';
+    return { valid: true, agentId };
   }
 
   const signature = request.headers.get('x-agent-signature');
