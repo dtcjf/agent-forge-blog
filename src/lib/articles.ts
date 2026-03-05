@@ -3,13 +3,18 @@ import path from 'path';
 import matter from 'gray-matter';
 import { remark } from 'remark';
 import html from 'remark-html';
-import { kv } from '@vercel/kv';
+import { createClient } from '@supabase/supabase-js';
 
 const articlesDirectory = path.join(process.cwd(), 'content', 'articles');
-const KV_ARTICLES_KEY = 'articles';
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 
-// Check if Redis is configured
-const isRedisConfigured = process.env.KV_URL !== undefined;
+// Initialize Supabase client if configured
+const supabase = SUPABASE_URL && SUPABASE_ANON_KEY
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+const isSupabaseConfigured = supabase !== null;
 
 export interface Article {
   slug: string;
@@ -30,22 +35,68 @@ export interface ArticleMeta {
   published: boolean;
 }
 
-function ensureDirectory() {
-  if (!fs.existsSync(articlesDirectory)) {
-    fs.mkdirSync(articlesDirectory, { recursive: true });
+// Supabase-based storage functions
+async function getArticlesFromSupabase(): Promise<Record<string, Article>> {
+  if (!supabase) return {};
+
+  const { data, error } = await supabase
+    .from('articles')
+    .select('*');
+
+  if (error || !data) {
+    console.error('Failed to fetch articles from Supabase:', error);
+    return {};
+  }
+
+  const articles: Record<string, Article> = {};
+  for (const row of data) {
+    articles[row.slug] = {
+      slug: row.slug,
+      title: row.title,
+      date: row.date,
+      tags: row.tags || [],
+      summary: row.summary || '',
+      published: row.published ?? true,
+      content: row.content,
+    };
+  }
+  return articles;
+}
+
+async function saveArticleToSupabase(article: Article): Promise<void> {
+  if (!supabase) return;
+
+  const { error } = await supabase
+    .from('articles')
+    .upsert({
+      slug: article.slug,
+      title: article.title,
+      date: article.date,
+      tags: article.tags,
+      summary: article.summary,
+      published: article.published,
+      content: article.content,
+    }, { onConflict: 'slug' });
+
+  if (error) {
+    console.error('Failed to save article to Supabase:', error);
+    throw error;
   }
 }
 
-// Redis-based storage functions
-async function getArticlesFromKV(): Promise<Record<string, Article>> {
-  if (!isRedisConfigured) return {};
-  const articles = await kv.get<Record<string, Article>>(KV_ARTICLES_KEY);
-  return articles || {};
-}
+async function deleteArticleFromSupabase(slug: string): Promise<boolean> {
+  if (!supabase) return false;
 
-async function saveArticlesToKV(articles: Record<string, Article>): Promise<void> {
-  if (!isRedisConfigured) return;
-  await kv.set(KV_ARTICLES_KEY, articles);
+  const { error } = await supabase
+    .from('articles')
+    .delete()
+    .eq('slug', slug);
+
+  if (error) {
+    console.error('Failed to delete article from Supabase:', error);
+    return false;
+  }
+  return true;
 }
 
 // Fallback: filesystem functions
@@ -189,37 +240,62 @@ function deleteArticleFS(slug: string): boolean {
   return true;
 }
 
-// Public API - uses Redis if available, falls back to filesystem
+// Public API - uses Supabase if available, falls back to filesystem
 export function getArticleSlugs(): string[] {
-  if (isRedisConfigured) {
-    // For Redis, we need to load all articles first
+  if (isSupabaseConfigured) {
     return [];
   }
   return getArticleSlugsFS();
 }
 
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
-  if (isRedisConfigured) {
-    const articles = await getArticlesFromKV();
-    return articles[slug] || null;
+  if (isSupabaseConfigured) {
+    if (!supabase) return null;
+    const { data, error } = await supabase
+      .from('articles')
+      .select('*')
+      .eq('slug', slug)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return {
+      slug: data.slug,
+      title: data.title,
+      date: data.date,
+      tags: data.tags || [],
+      summary: data.summary || '',
+      published: data.published ?? true,
+      content: data.content,
+    };
   }
   return getArticleBySlugFS(slug);
 }
 
 export async function getAllArticles(): Promise<ArticleMeta[]> {
-  if (isRedisConfigured) {
-    const articles = await getArticlesFromKV();
-    return Object.values(articles)
-      .filter((article) => article.published)
-      .sort((a, b) => (a.date > b.date ? -1 : 1))
-      .map(({ slug, title, date, tags, summary, published }) => ({
-        slug,
-        title,
-        date,
-        tags,
-        summary,
-        published,
-      }));
+  if (isSupabaseConfigured) {
+    if (!supabase) return [];
+
+    const { data, error } = await supabase
+      .from('articles')
+      .select('*')
+      .eq('published', true)
+      .order('date', { ascending: false });
+
+    if (error || !data) {
+      return [];
+    }
+
+    return data.map(({ slug, title, date, tags, summary, published }) => ({
+      slug,
+      title,
+      date,
+      tags: tags || [],
+      summary: summary || '',
+      published: published ?? true,
+    }));
   }
   return getAllArticlesFS();
 }
@@ -248,10 +324,8 @@ export async function createArticle(
     content,
   };
 
-  if (isRedisConfigured) {
-    const articles = await getArticlesFromKV();
-    articles[slug] = article;
-    await saveArticlesToKV(articles);
+  if (isSupabaseConfigured) {
+    await saveArticleToSupabase(article);
   } else {
     createArticleFS(slug, title, content, tags, summary, published);
   }
@@ -263,9 +337,9 @@ export async function updateArticle(
   slug: string,
   updates: Partial<Omit<Article, 'slug' | 'content'> & { content?: string }>
 ): Promise<Article | null> {
-  if (isRedisConfigured) {
-    const articles = await getArticlesFromKV();
-    const existing = articles[slug];
+  if (isSupabaseConfigured) {
+    // First get the existing article
+    const existing = await getArticleBySlug(slug);
     if (!existing) {
       return null;
     }
@@ -279,8 +353,7 @@ export async function updateArticle(
       content: updates.content ?? existing.content,
     };
 
-    articles[slug] = updated;
-    await saveArticlesToKV(articles);
+    await saveArticleToSupabase(updated);
     return updated;
   }
 
@@ -288,14 +361,8 @@ export async function updateArticle(
 }
 
 export async function deleteArticle(slug: string): Promise<boolean> {
-  if (isRedisConfigured) {
-    const articles = await getArticlesFromKV();
-    if (!articles[slug]) {
-      return false;
-    }
-    delete articles[slug];
-    await saveArticlesToKV(articles);
-    return true;
+  if (isSupabaseConfigured) {
+    return deleteArticleFromSupabase(slug);
   }
 
   return deleteArticleFS(slug);

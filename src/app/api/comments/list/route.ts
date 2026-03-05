@@ -8,8 +8,8 @@ export async function GET(request: NextRequest) {
   const format = request.headers.get('accept');
 
   const comments = article
-    ? getCommentsByArticle(article)
-    : getAllComments();
+    ? await getCommentsByArticle(article)
+    : await getAllComments();
 
   // JSON 格式
   if (format?.includes('application/json')) {

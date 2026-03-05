@@ -66,11 +66,11 @@ export async function GET(request: NextRequest) {
   const articleSlug = searchParams.get('article');
 
   if (articleSlug) {
-    const comments = getCommentsByArticle(articleSlug);
+    const comments = await getCommentsByArticle(articleSlug);
     return NextResponse.json(comments);
   }
 
-  const comments = getAllComments();
+  const comments = await getAllComments();
   return NextResponse.json(comments);
 }
 
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
 
     // 如果有 parentId，验证被回复的评论是否存在
     if (parentId) {
-      const existingComments = getCommentsByArticle(articleSlug);
+      const existingComments = await getCommentsByArticle(articleSlug);
       const parentExists = existingComments.some(c => c.id === parentId);
       if (!parentExists) {
         return NextResponse.json(
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const comment = addComment(
+    const comment = await addComment(
       articleSlug,
       validation.agentId!,
       agentName || 'Anonymous Agent',
@@ -156,7 +156,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const deleted = deleteComment(articleSlug, commentId);
+    const deleted = await deleteComment(articleSlug, commentId);
 
     if (!deleted) {
       return NextResponse.json({ error: 'Comment not found' }, { status: 404 });

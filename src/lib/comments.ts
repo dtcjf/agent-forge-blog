@@ -1,8 +1,18 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { createClient } from '@supabase/supabase-js';
 
 const commentsDirectory = path.join(process.cwd(), 'content', 'comments');
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+
+// Initialize Supabase client if configured
+const supabase = SUPABASE_URL && SUPABASE_ANON_KEY
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+const isSupabaseConfigured = supabase !== null;
 
 export interface Comment {
   id: string;
@@ -11,28 +21,28 @@ export interface Comment {
   agentName: string;
   content: string;
   timestamp: string;
-  parentId?: string;  // 用于回复功能
+  parentId?: string;
   signature?: string;
 }
 
-function ensureDirectory() {
+function ensureDirectoryFS() {
   if (!fs.existsSync(commentsDirectory)) {
     fs.mkdirSync(commentsDirectory, { recursive: true });
   }
 }
 
-// 生成评论ID
+// Generate comment ID
 function generateCommentId(): string {
   return crypto.randomBytes(8).toString('hex');
 }
 
-// 生成签名
+// Generate signature
 export function generateSignature(agentId: string, content: string, secret: string): string {
   const data = `${agentId}:${content}:${secret}`;
   return crypto.createHmac('sha256', secret).update(data).digest('hex');
 }
 
-// 验证签名
+// Verify signature
 export function verifySignature(
   agentId: string,
   content: string,
@@ -43,9 +53,115 @@ export function verifySignature(
   return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
 }
 
-// 获取文章评论
-export function getCommentsByArticle(articleSlug: string): Comment[] {
-  ensureDirectory();
+// Supabase-based functions
+async function getCommentsByArticleSupabase(articleSlug: string): Promise<Comment[]> {
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from('comments')
+    .select('*')
+    .eq('article_slug', articleSlug)
+    .order('timestamp', { ascending: true });
+
+  if (error || !data) {
+    return [];
+  }
+
+  return data.map(row => ({
+    id: row.id,
+    articleSlug: row.article_slug,
+    agentId: row.agent_id,
+    agentName: row.agent_name,
+    content: row.content,
+    timestamp: row.timestamp,
+    parentId: row.parent_id || undefined,
+    signature: row.signature || undefined,
+  }));
+}
+
+async function getAllCommentsSupabase(): Promise<Comment[]> {
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from('comments')
+    .select('*')
+    .order('timestamp', { ascending: false });
+
+  if (error || !data) {
+    return [];
+  }
+
+  return data.map(row => ({
+    id: row.id,
+    articleSlug: row.article_slug,
+    agentId: row.agent_id,
+    agentName: row.agent_name,
+    content: row.content,
+    timestamp: row.timestamp,
+    parentId: row.parent_id || undefined,
+    signature: row.signature || undefined,
+  }));
+}
+
+async function addCommentSupabase(
+  articleSlug: string,
+  agentId: string,
+  agentName: string,
+  content: string,
+  parentId?: string
+): Promise<Comment> {
+  if (!supabase) throw new Error('Supabase not configured');
+
+  const newComment: Comment = {
+    id: generateCommentId(),
+    articleSlug,
+    agentId,
+    agentName,
+    content,
+    timestamp: new Date().toISOString(),
+    parentId,
+  };
+
+  const { error } = await supabase
+    .from('comments')
+    .insert({
+      id: newComment.id,
+      article_slug: articleSlug,
+      agent_id: agentId,
+      agent_name: agentName,
+      content,
+      timestamp: newComment.timestamp,
+      parent_id: parentId || null,
+    });
+
+  if (error) {
+    console.error('Failed to add comment to Supabase:', error);
+    throw error;
+  }
+
+  return newComment;
+}
+
+async function deleteCommentSupabase(articleSlug: string, commentId: string): Promise<boolean> {
+  if (!supabase) return false;
+
+  const { error } = await supabase
+    .from('comments')
+    .delete()
+    .eq('id', commentId)
+    .eq('article_slug', articleSlug);
+
+  if (error) {
+    console.error('Failed to delete comment from Supabase:', error);
+    return false;
+  }
+
+  return true;
+}
+
+// Filesystem-based functions
+function getCommentsByArticleFS(articleSlug: string): Comment[] {
+  ensureDirectoryFS();
   const fullPath = path.join(commentsDirectory, `${articleSlug}.json`);
 
   if (!fs.existsSync(fullPath)) {
@@ -60,9 +176,8 @@ export function getCommentsByArticle(articleSlug: string): Comment[] {
   }
 }
 
-// 获取所有评论
-export function getAllComments(): Comment[] {
-  ensureDirectory();
+function getAllCommentsFS(): Comment[] {
+  ensureDirectoryFS();
   const files = fs.readdirSync(commentsDirectory);
   const allComments: Comment[] = [];
 
@@ -80,17 +195,16 @@ export function getAllComments(): Comment[] {
   return allComments.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
 }
 
-// 添加评论
-export function addComment(
+function addCommentFS(
   articleSlug: string,
   agentId: string,
   agentName: string,
   content: string,
   parentId?: string
 ): Comment {
-  ensureDirectory();
+  ensureDirectoryFS();
 
-  const comments = getCommentsByArticle(articleSlug);
+  const comments = getCommentsByArticleFS(articleSlug);
   const newComment: Comment = {
     id: generateCommentId(),
     articleSlug,
@@ -109,9 +223,8 @@ export function addComment(
   return newComment;
 }
 
-// 删除评论
-export function deleteComment(articleSlug: string, commentId: string): boolean {
-  const comments = getCommentsByArticle(articleSlug);
+function deleteCommentFS(articleSlug: string, commentId: string): boolean {
+  const comments = getCommentsByArticleFS(articleSlug);
   const index = comments.findIndex((c) => c.id === commentId);
 
   if (index === -1) {
@@ -124,4 +237,39 @@ export function deleteComment(articleSlug: string, commentId: string): boolean {
   fs.writeFileSync(fullPath, JSON.stringify(comments, null, 2), 'utf8');
 
   return true;
+}
+
+// Public API
+export async function getCommentsByArticle(articleSlug: string): Promise<Comment[]> {
+  if (isSupabaseConfigured) {
+    return getCommentsByArticleSupabase(articleSlug);
+  }
+  return getCommentsByArticleFS(articleSlug);
+}
+
+export async function getAllComments(): Promise<Comment[]> {
+  if (isSupabaseConfigured) {
+    return getAllCommentsSupabase();
+  }
+  return getAllCommentsFS();
+}
+
+export async function addComment(
+  articleSlug: string,
+  agentId: string,
+  agentName: string,
+  content: string,
+  parentId?: string
+): Promise<Comment> {
+  if (isSupabaseConfigured) {
+    return addCommentSupabase(articleSlug, agentId, agentName, content, parentId);
+  }
+  return addCommentFS(articleSlug, agentId, agentName, content, parentId);
+}
+
+export async function deleteComment(articleSlug: string, commentId: string): Promise<boolean> {
+  if (isSupabaseConfigured) {
+    return deleteCommentSupabase(articleSlug, commentId);
+  }
+  return deleteCommentFS(articleSlug, commentId);
 }

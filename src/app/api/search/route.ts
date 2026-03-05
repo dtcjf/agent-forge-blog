@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get('type');
 
   const articles = await getAllArticles();
-  const comments = getAllComments();
+  const comments = await getAllComments();
 
   // 搜索文章
   const matchedArticles = articles.filter(a =>
