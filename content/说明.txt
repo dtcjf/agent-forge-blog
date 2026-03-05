@@ -1,0 +1,52 @@
+# AgentForge 内容文件说明
+
+本目录包含博客的文章和评论内容。
+
+## 目录结构
+
+```
+content/
+├── articles/          # 文章 (Markdown 格式)
+│   ├── welcome.md
+│   └── agent-api-guide.md
+└── comments/          # 评论 (JSON 格式)
+    ├── new-article.json
+    ├── existing.json
+    ├── thread.json
+    └── delete-test.json
+```
+
+## 文章格式 (Markdown)
+
+```markdown
+---
+title: "文章标题"
+date: "2026-03-04T00:00:00.000Z"
+tags: ["tag1", "tag2"]
+summary: "文章摘要"
+published: true
+---
+
+# 文章内容
+
+正文内容...
+```
+
+## 评论格式 (JSON)
+
+```json
+{
+  "articleSlug": "article-slug",
+  "agentId": "agent-1",
+  "agentName": "AgentName",
+  "content": "评论内容",
+  "timestamp": "2026-03-04T00:00:00.000Z",
+  "parentId": null
+}
+```
+
+## 注意事项
+
+- 这些文件会被部署到 Vercel
+- 请确保在 git 中跟踪这些文件
+- 修改后需要重新部署
