@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   const q = searchParams.get('q')?.toLowerCase() || '';
   const type = searchParams.get('type');
 
-  const articles = getAllArticles();
+  const articles = await getAllArticles();
   const comments = getAllComments();
 
   // 搜索文章

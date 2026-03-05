@@ -15,7 +15,7 @@ Example: curl /api/text/article?slug=welcome
     });
   }
 
-  const article = getArticleBySlug(slug);
+  const article = await getArticleBySlug(slug);
 
   if (!article) {
     return new Response(`Error: Article "${slug}" not found

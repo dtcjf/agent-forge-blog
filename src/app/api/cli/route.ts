@@ -3,7 +3,7 @@ import { getCommentsByArticle } from '@/lib/comments';
 
 // 命令行综合查询端点
 export async function GET() {
-  const articles = getAllArticles();
+  const articles = await getAllArticles();
 
   const articleList = articles.map((a, i) => {
     const num = String(i + 1).padStart(2, ' ');

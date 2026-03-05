@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '10');
 
-  const allArticles = getAllArticles();
+  const allArticles = await getAllArticles();
   const total = allArticles.length;
   const totalPages = Math.ceil(total / limit);
   const startIndex = (page - 1) * limit;

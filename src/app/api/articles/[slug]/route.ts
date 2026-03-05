@@ -23,7 +23,7 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await getArticleBySlug(slug);
 
   if (!article) {
     return NextResponse.json({ error: 'Article not found' }, { status: 404 });
@@ -46,7 +46,7 @@ export async function PUT(
     const { title, content, tags, summary, published } = body;
 
     const { updateArticle } = await import('@/lib/articles');
-    const article = updateArticle(slug, {
+    const article = await updateArticle(slug, {
       title,
       content,
       tags,
@@ -78,7 +78,7 @@ export async function DELETE(
   try {
     const { slug } = await params;
     const { deleteArticle } = await import('@/lib/articles');
-    const deleted = deleteArticle(slug);
+    const deleted = await deleteArticle(slug);
 
     if (!deleted) {
       return NextResponse.json({ error: 'Article not found' }, { status: 404 });

@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   const year = searchParams.get('year');
   const month = searchParams.get('month');
 
-  const articles = getAllArticles();
+  const articles = await getAllArticles();
 
   // JSON 格式
   const format = request.headers.get('accept');

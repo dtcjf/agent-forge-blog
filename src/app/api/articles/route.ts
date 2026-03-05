@@ -28,14 +28,14 @@ export async function GET(request: NextRequest) {
   const limit = parseInt(searchParams.get('limit') || '10');
 
   if (slug) {
-    const article = getArticleBySlug(slug);
+    const article = await getArticleBySlug(slug);
     if (!article) {
       return NextResponse.json({ error: 'Article not found' }, { status: 404 });
     }
     return NextResponse.json(article);
   }
 
-  const allArticles = getAllArticles();
+  const allArticles = await getAllArticles();
   const total = allArticles.length;
   const totalPages = Math.ceil(total / limit);
   const startIndex = (page - 1) * limit;
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const existing = getArticleBySlug(slug);
+    const existing = await getArticleBySlug(slug);
     if (existing) {
       return NextResponse.json(
         { error: 'Article already exists' },
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const article = createArticle(
+    const article = await createArticle(
       slug,
       title,
       content,
@@ -116,7 +116,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { title, content, tags, summary, published } = body;
 
-    const article = updateArticle(slug, {
+    const article = await updateArticle(slug, {
       title,
       content,
       tags,
@@ -153,7 +153,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const deleted = deleteArticle(slug);
+    const deleted = await deleteArticle(slug);
 
     if (!deleted) {
       return NextResponse.json({ error: 'Article not found' }, { status: 404 });

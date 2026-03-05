@@ -7,11 +7,11 @@ export async function GET(request: NextRequest) {
   const slug = searchParams.get('slug');
   const format = request.headers.get('accept');
 
-  const articles = getAllArticles();
+  const articles = await getAllArticles();
 
   // 获取单篇文章
   if (slug) {
-    const article = getArticleBySlug(slug);
+    const article = await getArticleBySlug(slug);
 
     if (!article) {
       return new Response(`Error: Article "${slug}" not found\n`, {

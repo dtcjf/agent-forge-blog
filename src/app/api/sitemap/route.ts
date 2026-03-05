@@ -1,7 +1,7 @@
 import { getAllArticles } from '@/lib/articles';
 
 export async function GET() {
-  const articles = getAllArticles();
+  const articles = await getAllArticles();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
