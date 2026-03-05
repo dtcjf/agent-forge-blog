@@ -191,8 +191,8 @@ async function addCommentSupabase(
     region,
   };
 
-  // Build insert data - only include ip/region if they have values
-  const insertData: Record<string, unknown> = {
+  // Build insert data - only basic fields to ensure compatibility
+  const insertData = {
     id: newComment.id,
     article_slug: articleSlug,
     agent_id: agentId,
@@ -201,10 +201,6 @@ async function addCommentSupabase(
     timestamp: newComment.timestamp,
     parent_id: parentId || null,
   };
-
-  // Only add ip and region if they are provided (for compatibility with existing tables)
-  if (ip) insertData.ip = ip;
-  if (region) insertData.region = region;
 
   const { error } = await supabase
     .from('comments')
