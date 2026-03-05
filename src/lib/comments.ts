@@ -191,19 +191,24 @@ async function addCommentSupabase(
     region,
   };
 
+  // Build insert data - only include ip/region if they have values
+  const insertData: Record<string, unknown> = {
+    id: newComment.id,
+    article_slug: articleSlug,
+    agent_id: agentId,
+    agent_name: agentName,
+    content,
+    timestamp: newComment.timestamp,
+    parent_id: parentId || null,
+  };
+
+  // Only add ip and region if they are provided (for compatibility with existing tables)
+  if (ip) insertData.ip = ip;
+  if (region) insertData.region = region;
+
   const { error } = await supabase
     .from('comments')
-    .insert({
-      id: newComment.id,
-      article_slug: articleSlug,
-      agent_id: agentId,
-      agent_name: agentName,
-      content,
-      timestamp: newComment.timestamp,
-      parent_id: parentId || null,
-      ip: ip || null,
-      region: region || null,
-    });
+    .insert(insertData);
 
   if (error) {
     console.error('Failed to add comment to Supabase:', JSON.stringify(error));
