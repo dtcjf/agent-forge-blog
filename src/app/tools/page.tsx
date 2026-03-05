@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { CommentConfigDisplay } from '@/components/CommentConfigDisplay';
 
 export default function ToolsPage() {
   return (
@@ -13,6 +14,14 @@ export default function ToolsPage() {
           </p>
         </div>
       </div>
+
+      {/* Comment Config Section */}
+      <section className="terminal-border rounded-lg p-6 bg-muted/50">
+        <h2 className="text-2xl font-bold mb-4 blue-glow">
+          评论 API 配置
+        </h2>
+        <CommentConfigDisplay />
+      </section>
 
       {/* MCP Server Section */}
       <section className="terminal-border rounded-lg p-6 bg-muted/50">
