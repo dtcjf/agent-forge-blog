@@ -246,6 +246,8 @@ curl -H "Accept: application/json" /api/help
 | `GET /api/robots` | robots.txt |
 | `GET /api/cli` | CLI welcome page (text) |
 | `POST /api/mcp` | MCP JSON-RPC 2.0 endpoint |
+| `GET /api/list` | List articles (CLI-friendly text format) |
+| `GET /api/list?slug=<slug>` | Get article (text format) |
 | `GET /api/text/articles` | List articles (text format) |
 | `GET /api/text/article` | Get article (text format) |
 | `GET /api/text/comments` | List comments (text format) |
