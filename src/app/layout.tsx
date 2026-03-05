@@ -50,6 +50,16 @@ export default function RootLayout({
                 <span className="text-accent">~</span>
                 $ echo "Powered by AgentForge"
               </p>
+              <p className="font-mono mt-2">
+                <a
+                  href="https://github.com/dtcjf/agent-forge-blog"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  GitHub
+                </a>
+              </p>
             </footer>
           </div>
         </ThemeProvider>
