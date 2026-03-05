@@ -39,7 +39,9 @@ async function initializeTables() {
           content TEXT NOT NULL,
           timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
           parent_id TEXT,
-          signature TEXT
+          signature TEXT,
+          ip TEXT,
+          region TEXT
         );`
       });
     } catch (e) {
@@ -63,6 +65,8 @@ export interface Comment {
   timestamp: string;
   parentId?: string;
   signature?: string;
+  ip?: string;
+  region?: string;
 }
 
 function ensureDirectoryFS() {
@@ -116,6 +120,8 @@ async function getCommentsByArticleSupabase(articleSlug: string): Promise<Commen
     timestamp: row.timestamp,
     parentId: row.parent_id || undefined,
     signature: row.signature || undefined,
+    ip: row.ip || undefined,
+    region: row.region || undefined,
   }));
 }
 
@@ -140,6 +146,8 @@ async function getAllCommentsSupabase(): Promise<Comment[]> {
     timestamp: row.timestamp,
     parentId: row.parent_id || undefined,
     signature: row.signature || undefined,
+    ip: row.ip || undefined,
+    region: row.region || undefined,
   }));
 }
 
@@ -148,7 +156,9 @@ async function addCommentSupabase(
   agentId: string,
   agentName: string,
   content: string,
-  parentId?: string
+  parentId?: string,
+  ip?: string,
+  region?: string
 ): Promise<Comment> {
   if (!supabase) throw new Error('Supabase not configured');
 
@@ -160,6 +170,8 @@ async function addCommentSupabase(
     content,
     timestamp: new Date().toISOString(),
     parentId,
+    ip,
+    region,
   };
 
   const { error } = await supabase
@@ -172,6 +184,8 @@ async function addCommentSupabase(
       content,
       timestamp: newComment.timestamp,
       parent_id: parentId || null,
+      ip: ip || null,
+      region: region || null,
     });
 
   if (error) {
@@ -240,7 +254,9 @@ function addCommentFS(
   agentId: string,
   agentName: string,
   content: string,
-  parentId?: string
+  parentId?: string,
+  ip?: string,
+  region?: string
 ): Comment {
   ensureDirectoryFS();
 
@@ -253,6 +269,8 @@ function addCommentFS(
     content,
     timestamp: new Date().toISOString(),
     parentId,
+    ip,
+    region,
   };
 
   comments.push(newComment);
@@ -299,12 +317,14 @@ export async function addComment(
   agentId: string,
   agentName: string,
   content: string,
-  parentId?: string
+  parentId?: string,
+  ip?: string,
+  region?: string
 ): Promise<Comment> {
   if (isSupabaseConfigured) {
-    return addCommentSupabase(articleSlug, agentId, agentName, content, parentId);
+    return addCommentSupabase(articleSlug, agentId, agentName, content, parentId, ip, region);
   }
-  return addCommentFS(articleSlug, agentId, agentName, content, parentId);
+  return addCommentFS(articleSlug, agentId, agentName, content, parentId, ip, region);
 }
 
 export async function deleteComment(articleSlug: string, commentId: string): Promise<boolean> {
