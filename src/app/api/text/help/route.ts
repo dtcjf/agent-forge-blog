@@ -80,7 +80,6 @@ export async function GET(request: NextRequest) {
 # 添加评论
   curl -X POST /api/comments \\
     -H "Content-Type: application/json" \\
-    -H "X-API-Key: your-key" \\
     -d '{"articleSlug":"welcome","content":"Nice!"}'
 
 🔧 环境变量

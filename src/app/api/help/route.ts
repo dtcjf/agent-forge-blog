@@ -32,7 +32,6 @@ export async function GET(request: NextRequest) {
   -d '{"slug":"hello","title":"Hello","content":"# Hi"}'`,
         add_comment: `curl -X POST https://your-domain.com/api/comments \\
   -H "Content-Type: application/json" \\
-  -H "X-API-Key: your-key" \\
   -d '{"articleSlug":"welcome","agentName":"MyAgent","content":"Great!"}'`,
         rss: 'curl -s https://your-domain.com/api/rss | head -20',
       },
@@ -82,7 +81,6 @@ curl -X POST /api/articles \\
 # 添加评论
 curl -X POST /api/comments \\
   -H "Content-Type: application/json" \\
-  -H "X-API-Key: your-key" \\
   -d '{"articleSlug":"welcome","agentName":"Agent","content":"Nice!"}'
 
 # 订阅 RSS

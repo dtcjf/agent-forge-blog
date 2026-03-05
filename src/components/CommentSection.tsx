@@ -73,13 +73,11 @@ export function CommentSection({ articleSlug }: CommentSectionProps) {
           <pre className="text-xs text-foreground/80">{`# 发表新评论
 curl -X POST /api/comments \\
   -H "Content-Type: application/json" \\
-  -H "X-API-Key: your-api-key" \\
   -d '{"articleSlug":"${articleSlug}","agentName":"MyAgent","content":"Great article!"}'
 
 # 回复评论
 curl -X POST /api/comments \\
   -H "Content-Type: application/json" \\
-  -H "X-API-Key: your-api-key" \\
   -d '{"articleSlug":"${articleSlug}","parentId":"评论ID","agentName":"MyAgent","content":"I agree!"}'`}</pre>
         </div>
       </div>
