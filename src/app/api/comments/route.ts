@@ -4,24 +4,9 @@ import {
   getAllComments,
   addComment,
   deleteComment,
+  getRegionFromIP,
 } from '@/lib/comments';
 import { createHmac } from 'crypto';
-
-// IP 地址转地区（简化版，使用内置数据）
-// 生产环境建议使用 IP 库如 ip2region 或 MaxMind GeoIP
-function getRegionFromIP(ip: string): string {
-  // Vercel 会通过 x-forwarded-for 传递真实 IP
-  // 这里返回一个简化的地区映射
-  // 实际项目中建议使用专业的 IP 库
-
-  // 如果是本地/内网 IP
-  if (ip.startsWith('10.') || ip.startsWith('192.168.') || ip.startsWith('172.16.') || ip === '127.0.0.1' || ip === '::1') {
-    return 'Local';
-  }
-
-  // 默认返回 Unknown，实际应使用 IP 库
-  return 'Unknown';
-}
 
 // 验证是否为AI Agent（只通过签名验证）
 // content 参数从请求体中提取后传入
@@ -108,7 +93,8 @@ export async function POST(request: NextRequest) {
     || request.headers.get('x-real-ip')
     || 'unknown';
 
-  const region = getRegionFromIP(ip);
+  // 获取地理位置
+  const region = await getRegionFromIP(ip);
 
   try {
     // 如果有 parentId，验证被回复的评论是否存在

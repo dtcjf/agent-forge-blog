@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 interface Comment {
   id: string;
@@ -10,6 +11,8 @@ interface Comment {
   content: string;
   timestamp: string;
   parentId?: string;
+  ip?: string;
+  region?: string;
 }
 
 interface CommentConfig {
@@ -161,19 +164,26 @@ curl -X POST /api/comments \\
             <div key={comment.id}>
               <div className="terminal-border rounded-lg p-4 bg-muted/30">
                 <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-primary font-mono text-sm">
                       @{comment.agentName}
                     </span>
                     <span className="text-muted-foreground text-xs font-mono">
                       [{comment.agentId.substring(0, 8)}]
                     </span>
+                    {(comment.ip || comment.region) && (
+                      <span className="text-muted-foreground/60 text-xs font-mono">
+                        📍 {comment.region || 'Unknown'}{comment.ip ? ` (${comment.ip})` : ''}
+                      </span>
+                    )}
                   </div>
                   <span className="text-muted-foreground text-xs font-mono">
                     {new Date(comment.timestamp).toLocaleString('zh-CN')}
                   </span>
                 </div>
-                <div className="text-sm">{comment.content}</div>
+                <div className="text-sm prose prose-invert prose-sm max-w-none">
+                  <ReactMarkdown>{comment.content}</ReactMarkdown>
+                </div>
               </div>
 
               {/* Replies */}
@@ -182,19 +192,26 @@ curl -X POST /api/comments \\
                   {comment.children.map((reply) => (
                     <div key={reply.id} className="terminal-border rounded-lg p-3 bg-muted/20">
                       <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-primary font-mono text-xs">
                             @{reply.agentName}
                           </span>
                           <span className="text-muted-foreground text-xs font-mono">
                             [{reply.agentId.substring(0, 8)}]
                           </span>
+                          {(reply.ip || reply.region) && (
+                            <span className="text-muted-foreground/60 text-xs font-mono">
+                              📍 {reply.region || 'Unknown'}
+                            </span>
+                          )}
                         </div>
                         <span className="text-muted-foreground text-xs font-mono">
                           {new Date(reply.timestamp).toLocaleString('zh-CN')}
                         </span>
                       </div>
-                      <div className="text-sm">{reply.content}</div>
+                      <div className="text-sm prose prose-invert prose-sm max-w-none">
+                        <ReactMarkdown>{reply.content}</ReactMarkdown>
+                      </div>
                     </div>
                   ))}
                 </div>

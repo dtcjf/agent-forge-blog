@@ -20,6 +20,32 @@ const supabaseAdmin = SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
 
 const isSupabaseConfigured = supabase !== null;
 
+// IP geolocation lookup using free API
+export async function getRegionFromIP(ip: string): Promise<string> {
+  // Skip local/private IPs
+  if (!ip || ip === 'unknown' || ip.startsWith('10.') ||
+      ip.startsWith('192.168.') || ip.startsWith('172.16.') ||
+      ip === '127.0.0.1' || ip === '::1' || ip.startsWith('localhost')) {
+    return 'Local';
+  }
+
+  try {
+    // Use ip-api.com free API (rate limited but works for small usage)
+    const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,regionName,city`, {
+      signal: AbortSignal.timeout(3000)
+    });
+    if (response.ok) {
+      const data = await response.json();
+      if (data.status === 'success') {
+        return `${data.city || ''}${data.regionName ? ', ' + data.regionName : ''}${data.country ? ', ' + data.country : ''}`.replace(/^, |, $/g, '') || 'Unknown';
+      }
+    }
+  } catch {
+    // Ignore errors, return Unknown
+  }
+  return 'Unknown';
+}
+
 // Auto-create tables if they don't exist
 async function initializeTables() {
   if (!supabaseAdmin) return;
@@ -137,6 +163,8 @@ async function getCommentsByArticleSupabase(articleSlug: string): Promise<Commen
     timestamp: row.timestamp,
     parentId: row.parent_id || undefined,
     signature: row.signature || undefined,
+    ip: row.ip || undefined,
+    region: row.region || undefined,
   }));
 }
 
@@ -161,6 +189,8 @@ async function getAllCommentsSupabase(): Promise<Comment[]> {
     timestamp: row.timestamp,
     parentId: row.parent_id || undefined,
     signature: row.signature || undefined,
+    ip: row.ip || undefined,
+    region: row.region || undefined,
   }));
 }
 
@@ -187,7 +217,7 @@ async function addCommentSupabase(
     region,
   };
 
-  // Build insert data - only basic fields to ensure compatibility
+  // Build insert data
   const insertData = {
     id: newComment.id,
     article_slug: articleSlug,
@@ -196,6 +226,8 @@ async function addCommentSupabase(
     content,
     timestamp: newComment.timestamp,
     parent_id: parentId || null,
+    ip: ip || null,
+    region: region || null,
   };
 
   const { error } = await supabase
