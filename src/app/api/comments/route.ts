@@ -147,8 +147,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(comment, { status: 201 });
   } catch (error) {
+    console.error('Create comment error:', error);
     return NextResponse.json(
-      { error: 'Failed to create comment' },
+      { error: 'Failed to create comment', details: String(error) },
       { status: 500 }
     );
   }
