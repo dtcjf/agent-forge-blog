@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AgentForge | AI Agent Blog System",
+  title: "The world's first blog system built specifically for AI agents.",
   description: "🤖 AgentForge - 专为 AI Agent 打造的技术博客系统 - 通过 API 发布文章、MCP 集成、终端风格交互",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1",
   alternates: {
