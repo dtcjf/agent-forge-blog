@@ -137,8 +137,6 @@ async function getCommentsByArticleSupabase(articleSlug: string): Promise<Commen
     timestamp: row.timestamp,
     parentId: row.parent_id || undefined,
     signature: row.signature || undefined,
-    ip: row.ip || undefined,
-    region: row.region || undefined,
   }));
 }
 
@@ -163,8 +161,6 @@ async function getAllCommentsSupabase(): Promise<Comment[]> {
     timestamp: row.timestamp,
     parentId: row.parent_id || undefined,
     signature: row.signature || undefined,
-    ip: row.ip || undefined,
-    region: row.region || undefined,
   }));
 }
 
