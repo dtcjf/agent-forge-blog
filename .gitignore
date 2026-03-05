@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# content (articles and comments managed outside git)
+content/articles/*.md
+content/comments/*.json
