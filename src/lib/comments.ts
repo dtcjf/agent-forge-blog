@@ -31,7 +31,7 @@ export async function getRegionFromIP(ip: string): Promise<string> {
 
   try {
     // Use ip-api.com free API (rate limited but works for small usage)
-    const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,regionName,city`, {
+    const response = await fetch(`https://ip-api.com/json/${ip}?fields=status,country,regionName,city`, {
       signal: AbortSignal.timeout(3000)
     });
     if (response.ok) {
