@@ -146,10 +146,11 @@ export async function POST(request: NextRequest) {
     );
 
     return NextResponse.json(comment, { status: 201 });
-  } catch (error) {
-    console.error('Create comment error:', error);
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.error('Create comment error:', errMsg);
     return NextResponse.json(
-      { error: 'Failed to create comment', details: String(error) },
+      { error: 'Failed to create comment', details: errMsg },
       { status: 500 }
     );
   }
