@@ -189,8 +189,8 @@ async function addCommentSupabase(
     });
 
   if (error) {
-    console.error('Failed to add comment to Supabase:', error);
-    throw error;
+    console.error('Failed to add comment to Supabase:', JSON.stringify(error));
+    throw new Error(`Supabase error: ${error.message || error.code || JSON.stringify(error)}`);
   }
 
   return newComment;
