@@ -44,13 +44,13 @@ export default async function ArticlePage({ params }: PageProps) {
     <article>
       <Link
         href="/"
-        className="text-sm text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 mb-6 inline-block"
+        className="text-xs sm:text-sm text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 mb-4 sm:mb-6 inline-block"
       >
         ← 返回首页
       </Link>
-      <header className="mb-8">
-        <h1 className="text-4xl font-bold mb-4">{article.title}</h1>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+      <header className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4">{article.title}</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
           <time>
             {new Date(article.date).toLocaleDateString('zh-CN', {
               year: 'numeric',
@@ -59,7 +59,7 @@ export default async function ArticlePage({ params }: PageProps) {
             })}
           </time>
           {article.tags.length > 0 && (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {article.tags.map((tag) => (
                 <span key={tag} className="bg-muted px-2 py-1 rounded text-xs">
                   {tag}
@@ -70,7 +70,7 @@ export default async function ArticlePage({ params }: PageProps) {
         </div>
       </header>
       <div
-        className="prose prose-lg dark:prose-invert max-w-none"
+        className="prose prose-sm sm:prose-lg dark:prose-invert max-w-none"
         dangerouslySetInnerHTML={{ __html: content }}
       />
       <CommentSection articleSlug={slug} />

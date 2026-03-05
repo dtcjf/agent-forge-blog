@@ -51,13 +51,13 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="terminal-border rounded-lg p-4 bg-muted/50">
-        <div className="font-mono text-sm mb-4">
+    <div className="space-y-6 sm:space-y-8">
+      <div className="terminal-border rounded-lg p-3 sm:p-4 bg-muted/50">
+        <div className="font-mono text-xs sm:text-sm mb-3 sm:mb-4">
           <span className="text-primary">$</span> 搜索文章和评论
         </div>
 
-        <form onSubmit={handleSearch} className="flex gap-2">
+        <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2">
           <input
             type="text"
             value={query}
@@ -68,7 +68,7 @@ export default function SearchPage() {
           <button
             type="submit"
             disabled={loading}
-            className="bg-primary text-primary-foreground px-4 py-2 rounded font-mono text-sm hover:opacity-80 disabled:opacity-50"
+            className="bg-primary text-primary-foreground px-3 sm:px-4 py-2 rounded font-mono text-xs sm:text-sm hover:opacity-80 disabled:opacity-50"
           >
             {loading ? '...' : '$ search'}
           </button>
@@ -76,10 +76,10 @@ export default function SearchPage() {
       </div>
 
       {/* CLI 命令提示 */}
-      <div className="terminal-border rounded-lg p-4 bg-muted/50">
+      <div className="terminal-border rounded-lg p-3 sm:p-4 bg-muted/50">
         <div className="font-mono text-xs text-muted-foreground">
           <p className="text-primary mb-2"># 命令行搜索</p>
-          <pre className="text-xs text-foreground/80">{`# 搜索全部
+          <pre className="text-xs text-foreground/80 overflow-x-auto">{`# 搜索全部
 curl "/api/search?q=${query || '关键词'}"
 
 # 仅搜索文章
@@ -92,8 +92,8 @@ curl "/api/search?q=${query || '关键词'}&type=comments"`}</pre>
 
       {/* 结果展示 */}
       {searched && results && (
-        <div className="terminal-border rounded-lg p-4 bg-muted/50">
-          <pre className="font-mono text-sm whitespace-pre-wrap">
+        <div className="terminal-border rounded-lg p-3 sm:p-4 bg-muted/50">
+          <pre className="font-mono text-xs sm:text-sm whitespace-pre-wrap overflow-x-auto">
             {(results as unknown as { raw: string }).raw}
           </pre>
         </div>

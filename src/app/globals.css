@@ -123,6 +123,28 @@ pre {
   background: var(--muted) !important;
   border: 1px solid var(--border);
   border-left: 3px solid var(--primary);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 移动端优化 */
+@media (max-width: 640px) {
+  html {
+    font-size: 14px;
+  }
+
+  /* 移动端表格横向滚动 */
+  .prose table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 移动端图片最大宽度 */
+  .prose img {
+    max-width: 100%;
+    height: auto;
+  }
 }
 
 /* Prose styling */

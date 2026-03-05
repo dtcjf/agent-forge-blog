@@ -76,9 +76,9 @@ export default function ArchivesPage() {
   const paginatedArticles = filteredArticles.slice(startIndex, startIndex + ARTICLES_PER_PAGE);
 
   return (
-    <div className="space-y-8">
-      <div className="terminal-border rounded-lg p-4 bg-muted/50">
-        <div className="font-mono text-sm">
+    <div className="space-y-6 sm:space-y-8">
+      <div className="terminal-border rounded-lg p-3 sm:p-4 bg-muted/50">
+        <div className="font-mono text-xs sm:text-sm">
           <p className="text-primary">$</p> archives - Browse articles by date
           <p className="text-muted-foreground mt-2">
             Total: {totalArticles} articles
@@ -87,10 +87,10 @@ export default function ArchivesPage() {
       </div>
 
       {/* CLI commands */}
-      <div className="terminal-border rounded-lg p-4 bg-muted/50">
+      <div className="terminal-border rounded-lg p-3 sm:p-4 bg-muted/50">
         <div className="font-mono text-xs text-muted-foreground">
           <p className="text-primary mb-2"># CLI Access</p>
-          <pre className="text-xs text-foreground/80">{`# All archives
+          <pre className="text-xs text-foreground/80 overflow-x-auto">{`# All archives
 curl /api/text/archives
 
 # By year
@@ -102,11 +102,11 @@ curl /api/text/archives?year=2026&month=3`}</pre>
       </div>
 
       {/* Year selection */}
-      <div className="terminal-border rounded-lg p-4 bg-muted/50">
+      <div className="terminal-border rounded-lg p-3 sm:p-4 bg-muted/50">
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => { setSelectedYear(null); setSelectedMonth(null); }}
-            className={`px-3 py-1 rounded font-mono text-sm ${
+            className={`px-2 sm:px-3 py-1 rounded font-mono text-xs sm:text-sm ${
               !selectedYear ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-primary/20'
             }`}
           >
@@ -121,7 +121,7 @@ curl /api/text/archives?year=2026&month=3`}</pre>
             <button
               key={y}
               onClick={() => { setSelectedYear(y); setSelectedMonth(null); }}
-              className={`px-3 py-1 rounded font-mono text-sm ${
+              className={`px-2 sm:px-3 py-1 rounded font-mono text-xs sm:text-sm ${
                 selectedYear === y && !selectedMonth ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-primary/20'
               }`}
             >
@@ -133,11 +133,11 @@ curl /api/text/archives?year=2026&month=3`}</pre>
 
       {/* Month selection (when year is selected) */}
       {selectedYear && (
-        <div className="terminal-border rounded-lg p-4 bg-muted/50">
+        <div className="terminal-border rounded-lg p-3 sm:p-4 bg-muted/50">
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedMonth(null)}
-              className={`px-3 py-1 rounded font-mono text-sm ${
+              className={`px-2 sm:px-3 py-1 rounded font-mono text-xs sm:text-sm ${
                 !selectedMonth ? 'bg-accent text-accent-foreground' : 'bg-muted hover:bg-accent/20'
               }`}
             >
@@ -151,7 +151,7 @@ curl /api/text/archives?year=2026&month=3`}</pre>
                 <button
                   key={m}
                   onClick={() => setSelectedMonth(String(m))}
-                  className={`px-3 py-1 rounded font-mono text-sm ${
+                  className={`px-2 sm:px-3 py-1 rounded font-mono text-xs sm:text-sm ${
                     selectedMonth === String(m) ? 'bg-accent text-accent-foreground' : 'bg-muted hover:bg-accent/20'
                   }`}
                 >
@@ -165,7 +165,7 @@ curl /api/text/archives?year=2026&month=3`}</pre>
 
       {/* Filter info */}
       {selectedYear && (
-        <div className="terminal-border rounded-lg p-4 bg-muted/50 font-mono text-sm text-muted-foreground">
+        <div className="terminal-border rounded-lg p-3 sm:p-4 bg-muted/50 font-mono text-xs sm:text-sm text-muted-foreground">
           {selectedMonth
             ? `Showing: ${selectedYear} year, ${selectedMonth} month (${totalFiltered} articles)`
             : `Showing: ${selectedYear} year (${totalFiltered} articles)`}
@@ -173,7 +173,7 @@ curl /api/text/archives?year=2026&month=3`}</pre>
       )}
 
       {/* Article list */}
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {loading ? (
           <p className="text-muted-foreground font-mono">Loading...</p>
         ) : paginatedArticles.length === 0 ? (
@@ -184,23 +184,23 @@ curl /api/text/archives?year=2026&month=3`}</pre>
               <Link
                 key={article.slug}
                 href={`/posts/${article.slug}`}
-                className="block terminal-border rounded-lg p-4 bg-muted/30 hover:bg-muted/50 transition-colors group"
+                className="block terminal-border rounded-lg p-3 sm:p-4 bg-muted/30 hover:bg-muted/50 transition-colors group"
               >
-                <div className="flex items-start gap-4">
-                  <span className="text-muted-foreground font-mono text-sm whitespace-nowrap">
+                <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                  <span className="text-muted-foreground font-mono text-xs sm:text-sm whitespace-nowrap">
                     {new Date(article.date).toLocaleDateString('zh-CN')}
                   </span>
                   <div className="flex-1">
-                    <h4 className="font-semibold group-hover:text-primary transition-colors">
+                    <h4 className="font-semibold group-hover:text-primary transition-colors text-base sm:text-lg">
                       {article.title}
                     </h4>
                     {article.summary && (
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                         {article.summary}
                       </p>
                     )}
                     {article.tags.length > 0 && (
-                      <div className="flex gap-2 mt-2">
+                      <div className="flex flex-wrap gap-1 sm:gap-2 mt-2">
                         {article.tags.map(tag => (
                           <span key={tag} className="text-xs bg-muted px-2 py-0.5 rounded">
                             {tag}
@@ -215,21 +215,21 @@ curl /api/text/archives?year=2026&month=3`}</pre>
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-8">
+              <div className="flex items-center justify-center gap-2 mt-6 sm:mt-8">
                 <button
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-1 rounded font-mono text-sm bg-muted hover:bg-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-2 sm:px-3 py-1 rounded font-mono text-xs sm:text-sm bg-muted hover:bg-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   ← Prev
                 </button>
-                <span className="font-mono text-sm text-muted-foreground">
+                <span className="font-mono text-xs sm:text-sm text-muted-foreground">
                   {currentPage} / {totalPages}
                 </span>
                 <button
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-1 rounded font-mono text-sm bg-muted hover:bg-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-2 sm:px-3 py-1 rounded font-mono text-xs sm:text-sm bg-muted hover:bg-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Next →
                 </button>

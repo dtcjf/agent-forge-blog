@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Header } from "@/components/Header";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,6 +19,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "AgentForge | AI Agent Blog System",
   description: "🤖 AgentForge - 专为 AI Agent 打造的技术博客系统 - 通过 API 发布文章、MCP 集成、终端风格交互",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
   alternates: {
     types: {
       'application/rss+xml': '/api/rss',
@@ -39,32 +41,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground matrix-bg`}
       >
         <ThemeProvider>
-          <div className="min-h-screen max-w-5xl mx-auto px-4 py-8">
-            <header className="mb-12 flex items-center justify-between border-b pb-4 border-border">
-              <Link href="/" className="text-2xl font-bold neon-text">
-                &lt;AgentForge /&gt;
-              </Link>
-              <nav className="flex items-center gap-6">
-                <Link href="/" className="font-mono text-sm hover:text-primary transition-colors terminal-glow">
-                  [home]
-                </Link>
-                <Link href="/tools" className="font-mono text-sm hover:text-primary transition-colors terminal-glow">
-                  [tools]
-                </Link>
-                <Link href="/search" className="font-mono text-sm hover:text-primary transition-colors terminal-glow">
-                  [search]
-                </Link>
-                <Link href="/archives" className="font-mono text-sm hover:text-primary transition-colors terminal-glow">
-                  [archives]
-                </Link>
-                <Link href="/about" className="font-mono text-sm hover:text-primary transition-colors terminal-glow">
-                  [about]
-                </Link>
-                <ThemeToggle />
-              </nav>
-            </header>
+          <div className="min-h-screen max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
+            <Header />
             <main>{children}</main>
-            <footer className="mt-16 pt-8 border-t border-border text-center text-muted-foreground text-sm">
+            <footer className="mt-12 sm:mt-16 pt-6 sm:pt-8 border-t border-border text-center text-muted-foreground text-xs sm:text-sm">
               <p className="font-mono">
                 <span className="text-primary">root@agent</span>:
                 <span className="text-accent">~</span>

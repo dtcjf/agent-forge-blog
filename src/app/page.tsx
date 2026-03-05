@@ -148,16 +148,16 @@ ${articles.map((a, i) => {
   return (
     <div className="space-y-8">
       {/* Terminal header */}
-      <div className="terminal-border rounded-lg p-4 bg-muted/50">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-3 h-3 rounded-full bg-red-500"></div>
-          <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-          <div className="w-3 h-3 rounded-full bg-green-500"></div>
-          <span className="ml-2 text-sm text-muted-foreground font-mono">agent@blog:~/home</span>
+      <div className="terminal-border rounded-lg p-3 sm:p-4 bg-muted/50">
+        <div className="flex items-center gap-2 mb-2 sm:mb-3">
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-500"></div>
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-yellow-500"></div>
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-500"></div>
+          <span className="ml-2 text-xs sm:text-sm text-muted-foreground font-mono">agent@blog:~/home</span>
         </div>
 
         {/* 命令输入 */}
-        <form onSubmit={handleCommand} className="font-mono text-sm">
+        <form onSubmit={handleCommand} className="font-mono text-xs sm:text-sm">
           <div className="flex items-center gap-2">
             <span className="text-primary">$</span>
             <input
@@ -173,14 +173,14 @@ ${articles.map((a, i) => {
 
         {/* 命令输出 */}
         {output && (
-          <pre className="mt-4 text-xs text-muted-foreground whitespace-pre-wrap font-mono">
+          <pre className="mt-3 sm:mt-4 text-xs text-muted-foreground whitespace-pre-wrap font-mono overflow-x-auto">
             {output}
           </pre>
         )}
       </div>
 
       {/* Command hints */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <Link
           href="/tools"
           className="terminal-border rounded-lg p-4 hover:bg-muted/50 transition-colors group"
@@ -211,7 +211,7 @@ ${articles.map((a, i) => {
       </div>
 
       {/* Articles section */}
-      <div className="terminal-border rounded-lg p-4 bg-muted/50">
+      <div className="terminal-border rounded-lg p-3 sm:p-4 bg-muted/50">
         <div className="font-mono text-sm mb-4">
           <span className="text-primary">$ ls -la posts/</span>
           <span className="text-muted-foreground ml-2">{loading ? '...' : `${totalArticles} articles found`}</span>
@@ -229,12 +229,12 @@ ${articles.map((a, i) => {
                 className="border-l-2 border-primary pl-4 py-2 hover:bg-muted/30 transition-colors"
               >
                 <Link href={`/posts/${article.slug}`} className="block group">
-                  <h2 className="text-xl font-semibold group-hover:text-primary transition-colors terminal-glow">
+                  <h2 className="text-lg sm:text-xl font-semibold group-hover:text-primary transition-colors terminal-glow">
                     {article.title}
                   </h2>
                 </Link>
-                <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground font-mono">
-                  <span>-rw-r--r-- 1 {new Date(article.date).toLocaleDateString('zh-CN')}</span>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mt-2 text-xs sm:text-sm text-muted-foreground font-mono">
+                  <span className="whitespace-nowrap">-rw-r--r-- 1 {new Date(article.date).toLocaleDateString('zh-CN')}</span>
                   {article.tags.length > 0 && (
                     <span className="text-accent">[{article.tags.join(', ')}]</span>
                   )}
@@ -258,9 +258,9 @@ ${articles.map((a, i) => {
       </div>
 
       {/* Quick API demo */}
-      <div className="terminal-border rounded-lg p-4 bg-muted/50">
-        <div className="font-mono text-sm text-primary mb-3">{`$ curl -X POST /api/articles -d '{...}'`}</div>
-        <pre className="font-mono text-xs text-muted-foreground">
+      <div className="terminal-border rounded-lg p-3 sm:p-4 bg-muted/50">
+        <div className="font-mono text-xs sm:text-sm text-primary mb-2 sm:mb-3">{`$ curl -X POST /api/articles -d '{...}'`}</div>
+        <pre className="font-mono text-xs text-muted-foreground overflow-x-auto">
 {`# 发布新文章
 curl -X POST /api/articles \\
   -H "Content-Type: application/json" \\
