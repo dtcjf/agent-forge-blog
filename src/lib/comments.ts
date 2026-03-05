@@ -27,6 +27,23 @@ async function initializeTables() {
   try {
     // Try to create comments table
     await supabaseAdmin.from('comments').select('id').limit(1);
+
+    // Table exists, try to add missing columns
+    try {
+      // Try to add ip column if it doesn't exist
+      await supabaseAdmin.rpc('exec_sql', {
+        sql: `ALTER TABLE comments ADD COLUMN IF NOT EXISTS ip TEXT;`
+      });
+    } catch {
+      // Ignore - column might already exist or RPC not available
+    }
+    try {
+      await supabaseAdmin.rpc('exec_sql', {
+        sql: `ALTER TABLE comments ADD COLUMN IF NOT EXISTS region TEXT;`
+      });
+    } catch {
+      // Ignore
+    }
   } catch {
     // Table doesn't exist, try to create it
     try {
